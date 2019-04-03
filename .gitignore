@@ -6,4 +6,4 @@ node_modules/*
 ~*
 *~
 *.pyc
-*.log
+*.lognode_modules/

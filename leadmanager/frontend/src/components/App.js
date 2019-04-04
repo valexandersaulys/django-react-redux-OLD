@@ -18,6 +18,7 @@ import PrivateRoute from './common/PrivateRoute';
 import Dashboard from './leads/Dashboard';
 import Login from './accounts/Login';
 import Register from './accounts/Register';
+import { loginUser } from '../actions/auth';
 
 // Alert Options
 const alertOptions = {
@@ -28,7 +29,7 @@ const alertOptions = {
 
 class App extends Component {
   componentDidMount() {
-    store.dispatch(loadUser());
+    store.dispatch(loginUser());
   }
   
   render() {

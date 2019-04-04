@@ -13,7 +13,7 @@ export class Alerts extends Component {
     const { error, alert, message } = this.props;
     
     if (error != prevProps.error) {
-      console.log(error)
+
       if (error.msg.name) 
         alert.error(`Name: ${error.msg.name.join()}`);
 
@@ -23,6 +23,9 @@ export class Alerts extends Component {
       if (error.msg.message) 
         alert.error(`${error.msg.message.join()}`);
 
+      if (error.msg.non_field_errors)
+        alert.error(`${error.msg.non_field_errors.join()}`);
+      
       if (error.status === 403)
         alert.error(`Unable to get leads: ${error.msg.detail}`);
 
@@ -35,6 +38,8 @@ export class Alerts extends Component {
         alert.success(message.deleteLead);
       if (message.addedLead)
         alert.success(message.addedLead);
+      if (message.passwordsNotMatch)
+        alert.error(message.passwordsNotMatch);
     }
   }
   

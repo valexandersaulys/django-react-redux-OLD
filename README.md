@@ -4,6 +4,10 @@ This is based on a Traversy Media Post.
 
 https://www.youtube.com/watch?v=Uyei2iDA4Hs
 
+
+__[To-do](https://www.youtube.com/watch?v=Fia-GGgHpK0)__
+
+
 The twist in the idea is to use Django Rest Framework to create an API
 and then let Django load a single HTML template, letting React manage
 the frontend.
@@ -70,10 +74,12 @@ within out scripts.
 Order of Building:
 
   1. reducer with name
-  2. action that corresponds to reducer name
+  2. action that corresponds to reducer name -- one for one match
   3. connect up reducer with component
 
-Redux helps us keep a single state from which we can read data.
+Redux helps us keep a single state from which we can read
+data. Components trigger actions, which _dispatch_ reducers resulting
+in changes to state. 
 
 Install with:
 
@@ -106,6 +112,99 @@ export default connect(mapStateToProps)(Leads);
 It seems to be wiser to build out the JSX how you imagine it looking
 after loading, _then_ put in what it should look like before loading
 or on error.
+
+
+### Alerts
+
+_Note: I wasn't a believe in these, but after completing the tutorial
+I've come to think they're essential for a good frontend._
+
+Alert handling is done with the
+[`react-alerts`](https://github.com/schiehll/react-alert) library.
+
+Within our `src/layouts` folder, we create an `Alerts.js` file. This
+file contains a fragment (it has no layout -- that's handled by
+_react-alerts_), which is wrapped with `withAlert()(Alerts)`. This
+gives us `alert` withint `this.props`.
+
+Then, in our main app, we import a few things at the header top
+
+```javascript
+/* src/components/App.js */
+import { Provider as AlertProvider } from 'react-alert';
+import AlertTemplate from 'react-alert-template-basic';
+import Alerts from './layout/Alerts';
+
+//...
+
+<Provider store={store}>   //this original Provider from react-redux
+  <AlertProvider template={AlertTemplate} {...alertOptions}>
+    <Fragment>
+      <Header/>
+      <Alerts/>  // <-- what we need to add
+      // ...
+    </Fragment>
+  </AlertProvider>
+</Provider>
+//  ...
+```
+
+Now our alerts get improted into our app.
+
+Whenever an error occurs, we'll need to `dispatch` it to the redux
+reducer and trigger the appropriate action. Our action will be called
+`GET_ERRORS` to start. Instead of console logging the error, we'll be
+calling `dispatch({ type: GET_ERRORS, payload: errors })`, which is
+already imported via redux (I think?).
+
+Back in our `components/layout/Alerts.js` file, we can add new error
+handling by looking at component lifecycle information. Our component,
+has access to `prevProps` inside of `componentDidUpdate(...)`. We can
+compare the error at the moment in `this.props` with the `prevProps`
+error. If they differ, we can call `this.props.alert` -- which comes
+from `withAlert()(...)` -- and return a popup error.
+
+Our error has multiple keys associated with it: _name_ and _email_. If
+we have a _name_ error, then we can call a different alert from if we
+have an _email_ error. This hardcodes the message, which isn't
+necesarily preferable. Using backticks this is improved.
+
+On our Form component, we want it to clear when we add a new lead. We
+can do that by changing the state with `this.setState` on the
+`onSubmit` function.
+
+
+## Authentication [Video 5]
+
+Now we go back to the Django application to secure it. 
+
+We'll go to our models and add in our User model, located in
+`django.contrib.auth.models`.
+
+```python
+...
+
+from django.contrib.auth.models import User
+
+
+class Lead(models.Model):
+    # *** to secure our model so only appropriate users can see
+    owner = models.ForeignKey(User,
+                              related_name='leads',
+                              on_delete=models.CASCADE,  # what happens we delete a user
+                              null=True)  # we can have null values
+    ...
+```
+
+Then we migrate everything.
+
+Going to our `api.py` file, we can change the permission classes
+listed within our viewset.
+
+
+
+
+
 
 
 

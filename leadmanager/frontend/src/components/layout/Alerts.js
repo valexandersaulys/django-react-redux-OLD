@@ -13,6 +13,7 @@ export class Alerts extends Component {
     const { error, alert, message } = this.props;
     
     if (error != prevProps.error) {
+      console.log(error)
       if (error.msg.name) 
         alert.error(`Name: ${error.msg.name.join()}`);
 
@@ -21,6 +22,12 @@ export class Alerts extends Component {
 
       if (error.msg.message) 
         alert.error(`${error.msg.message.join()}`);
+
+      if (error.status === 403)
+        alert.error(`Unable to get leads: ${error.msg.detail}`);
+
+      if (error.status === 500)
+        alert.error(`Server error, please try again later`);
     }
 
     if (message !== prevProps.message) {

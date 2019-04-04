@@ -201,7 +201,58 @@ Then we migrate everything.
 Going to our `api.py` file, we can change the permission classes
 listed within our viewset.
 
+```python
+# View
+class LeadViewSet(viewsets.ModelViewSet):
+    permission_classes = [
+        permissions.IsAuthenticated
+    ]
+    serializer_class = LeadSerializer
 
+    # what we query for 
+    def get_queryset(self):
+        """only get the leads of the user"""
+        return self.request.user.leads.all()
+
+    # what happens we create a new lead
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+```
+
+Now we'll need to catch errors that come up -- we'll get a 403 if we
+run now. This will be a new action called `returnError`, which we'll
+also use to condense other work we've done sending errors.
+
+Django will need a registration API to login. We'll do this at the end
+of our middleware using a django extension called
+[knox](https://github.com/James1345/django-rest-knox). We'll also add
+a `REST_FRAMEWORK` variable to store auth class info.
+
+```python
+# settings.py
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'leads.apps.LeadsConfig',
+    'frontend.apps.FrontendConfig',
+    'rest_framework',
+    'knox',
+]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': ('knox.auth.TokenAuthentication')
+}
+```
+
+We'll need a new app for managing accounts. This will be our API
+endpoint for logging in.
+
+Create `accounts/serializers.py` file. This will be a serializer like
+before, but more indepth for user. 
 
 
 

@@ -8,4 +8,9 @@ export const GET_ERRORS = 'GET_ERRORS';
 
 // messages.js
 export const GET_MESSAGES = 'GET_MESSAGES';
-export const CREATE_MESSAGE = 'CREATE_MESSAGE';  // ended up not using this 
+export const CREATE_MESSAGE = 'CREATE_MESSAGE';  // ended up not using this
+
+// auth.js
+export const USER_LOADING = 'USER_LOADING';
+export const USER_LOADED = 'USER_LOADED';
+export const AUTH_ERROR = 'AUTH_ERROR';

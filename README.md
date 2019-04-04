@@ -252,9 +252,92 @@ We'll need a new app for managing accounts. This will be our API
 endpoint for logging in.
 
 Create `accounts/serializers.py` file. This will be a serializer like
-before, but more indepth for user. 
+before, but more indepth for users.
+
+Inside, we need a serializer for getting a user's information
+(`UserSerializer`), registering a new user (`RegisterSerializer`), and
+logging a user (`LoginSerializer`).
+
+Next we need matching APIs for all of these. We'll pull in
+`rest_framework.generics.GenericAPIView` for all of these.
+
+What goes into each will differ, though it's very similar across the
+board. `RegisterAPI` will have a `post()` function wherein we pass the
+data to our `self.get_serializer` function (built-in GenericAPIView),
+check that it's valid, save if possible, create a token, and return
+the user data (via UserSerializer) and the appropriate token.
+
+```python
+class RegisterAPI(generics.GenericAPIView):
+    serializer_class = RegisterSerializer
+    
+    def post(self, request, *args, **kwargs):
+        """When posting, we want to create a new user"""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)  # check that data is good
+        user = serializer.save()  # django automatically hashes the password
+        _, user_token = AuthToken.objects.create(user)  # annoying change from tutorial
+        return Response({
+            "user": UserSerializer(user,context=self.get_serializer_context).data,
+            "token": user_token # return a token for auth use in header
+        })
+```
+
+Next, we'll do the login serializer. This is almost identical save for
+the serializer we use (now LoginSerializer) and that we grab the
+validated data from this serializer as opposed to saving something
+new.
+
+```python
+class LoginAPI(generics.GenericAPIView):
+    serializer_class = LoginSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True) 
+        user = serializer.validated_data
+        _, user_token = AuthToken.objects.create(user) 
+        return Response({
+            "user": UserSerializer(user,context=self.get_serializer_context).data,
+            "token": user_token 
+        })
+```
+
+Our UserAPI will then be an api view we use to check if a user has the
+appropriate token, returning his information if this is the case.
+
+```python
+class UserAPI(generics.RetrieveAPIView):
+    """This will give us user auth info given a valid token"""
+    permission_classes = [
+        permissions.IsAuthenticated,  # check to see we're authenticated
+    ]
+    serializer_class = UserSerializer
+
+    def get_object(self):
+        return self.request.user
+```
+
+We then wrap these API views up in our `accounts/urls.py`. This gets
+imported into our main `leadmanager/urls.py` file. Knox is used to
+handle the logout view for us. These all look identical to django
+CBVs. 
 
 
+## Routing with react
+
+We'll install react router (`react-router-dom`) within our app and use
+that to change the routes as necesary.
+
+Within `frontend/src/App.js`, we'll add new imports
+
+```javascript
+import { HashRouter as Router, Route, Switch, Redirect } from "react-router-dom";
+
+//...
+
+
+```
 
 
 
